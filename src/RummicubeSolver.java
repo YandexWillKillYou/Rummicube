@@ -13,27 +13,6 @@ public class RummicubeSolver {
     //A 2 3 4 5 6 7 8 9 0 J Q K
 
     public static List<Possibility> list = new ArrayList<>();
-    public final static String[] orderOfChecking =
-                {       //this list is final
-                        //Designed to cut as many possibilities as possible faster
-                        //by method isAnyHope
-                        "A♠", "A♣", "A♦", "A♥",
-                        "K♠", "K♣", "K♦", "K♥",
-                        "2♠", "2♣", "2♦", "2♥",
-                        "Q♠", "Q♣", "Q♦", "Q♥",
-                        "3♠", "3♣", "3♦", "3♥",
-                        "J♠", "J♣", "J♦", "J♥",
-                        "4♠", "4♣", "4♦", "4♥",
-                        "0♠", "0♣", "0♦", "0♥",
-                        "5♠", "5♣", "5♦", "5♥",
-                        "9♠", "9♣", "9♦", "9♥",
-                        "6♠", "6♣", "6♦", "6♥",
-                        "8♠", "8♣", "8♦", "8♥",
-                        "7♠", "7♣", "7♦", "7♥"
-                };
-    //reversing method
-    //public static int[] valueOfCardByIndexFromOrderOfCheckingDividedByFour =  { 0, 12, 1, 11, 2, 10, 3, 9, 4, 8, 5, 7, 6 };
-
     int[] whereCardsAre = new int[104];
 
     protected void go(){
@@ -48,7 +27,7 @@ public class RummicubeSolver {
             int tmp = 0;
             for (int j = 0; j < 104; j++) {
                 if(whereCardsAre[j] == Card.inHand &&
-                        list.get(i).isPlaced(j) ){
+                        Card.isPlaced(list.get(i).whereCardsAre[j]) ){
                     tmp+=1;
                 }
             }
@@ -71,7 +50,7 @@ public class RummicubeSolver {
         //card #id and some other are not still used
         //todo:kostyl
         boolean success = false;
-        for (int where = Possibility.byColor1; where <= Possibility.byColor2; where++) {
+        for (int where = Card.byColor1; where <= Card.byColor2; where++) {
             //create a copy of possibility for further search
             Possibility second = new Possibility(first, id, where);
             if(second.isAnyHope(id,where)){
@@ -82,15 +61,15 @@ public class RummicubeSolver {
         }
         boolean thirdSucceed;
         {
-            Possibility second = new Possibility(first, id, Possibility.byValue2);
-            if (second.isAnyHope(id, Possibility.byValue2)) {
+            Possibility second = new Possibility(first, id, Card.byValue2);
+            if (second.isAnyHope(id, Card.byValue2)) {
                 //recursive tree with up to 4 branches
                 thirdSucceed = tryToPut(second);
                 if (thirdSucceed) success = true;
             }
         }
-            Possibility second = new Possibility(first, id, Possibility.byValue2);
-            if (second.isAnyHope(id, Possibility.byValue2)) {
+            Possibility second = new Possibility(first, id, Card.byValue2);
+            if (second.isAnyHope(id, Card.byValue2)) {
                 //recursive tree with up to 4 branches
                 boolean branchSucceeded = tryToPut(second);
                 if (branchSucceeded) success = true;
@@ -99,7 +78,7 @@ public class RummicubeSolver {
 
         //We tried to put card id to all possible places
         //now we will skip it when calculating/*
-        if(whereCardsAre[id] == Possibility.inHeap)return success;
+        if(whereCardsAre[id] == Card.inHeap)return success;
        // Possibility second = new Possibility(first,id,Possibility.inHand_ignored);
         boolean branchSucceeded = tryToPut(second);
         if(branchSucceeded) success = true;
@@ -108,20 +87,18 @@ public class RummicubeSolver {
     public void updateList(int[] newData){
         for (int i = 0; i < 104; i++) {
             int condition = newData[i];
-            if(condition == Possibility.byColor1||
-                    condition == Possibility.byColor2||
-                    condition == Possibility.byValue1||
-                    condition == Possibility.byValue2||
-                    condition == Possibility.inHeap)
-                whereCardsAre[i] = Possibility.inHeap;
+            if(condition == Card.byColor1||
+                    condition == Card.byColor2||
+                    condition == Card.byValue1||
+                    condition == Card.byValue2||
+                    condition == Card.inHeap)
+                whereCardsAre[i] = Card.inHeap;
             else
-            if(condition == Possibility.inHand||
-                    condition == Possibility.inHand_ignored)
-                whereCardsAre[i] = Possibility.inHand;
-            if(condition == Possibility.inStack||
-                    condition == Possibility.otherPlayer){}
-
-
+            if(condition == Card.inHand||
+                    condition == Card.inHand_ignored)
+                whereCardsAre[i] = Card.inHand;
+            if(condition == Card.inStack||
+                    condition == Card.otherPlayer){}
         }
     }
 }

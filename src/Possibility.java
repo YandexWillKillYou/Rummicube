@@ -11,7 +11,7 @@ public class Possibility {
     //A♠ A♠ A♣ A♣ A♦ A♦ A♥ A♥ K♠ K♠ K♣ ...
     //this list contains their position(in hand, in stack, in tableListsetc)
     int[] whereCardsAre = new int[104];
-
+    Table table;
     //other way to store cards, helpful. it doubles other database, so maybe should be reworked
     //
     //Each card can be placed to one of 4 places: 2 places by value and 2 places by color (except Aces, TODO: JQKA)
@@ -36,18 +36,19 @@ public class Possibility {
         for (int i = 0; i < 104; i++) {
             this.whereCardsAre[i] = whereCardsAre[i];
         }
-        placeCardsOnTable();
+        table = new Table();
+        table.placeCardsOnTable(whereCardsAre);
     }
     public Possibility(Possibility previous, int id,  int where){
         for (int i = 0; i < 104; i++) {
             whereCardsAre[i] = previous.whereCardsAre[i];
         }
+        table = new Table();
         //here we mark id as used
         //at the next iteration id will be the next available card
         whereCardsAre[id] = where;
-        placeCardsOnTable();
+        table.placeCardsOnTable(whereCardsAre);
     }
-    public boolean isAnyHopes(int a,int b){return false;}
     public boolean isAnyHope(int cardIndex/*0-103*/, int where/*byValue1, byColor2 etc*/) {
 //        System.out.println("Hope: new card " + RummiShell.cardName(cardIndex) + " at " + where);
 //        printTable();
@@ -71,16 +72,16 @@ public class Possibility {
         //furthermore, it is supposed that previous configuration (without new card) was good
         //todo: check a statement:
         //todo: empty table is good by default
-        if(where==byValue1||where==byValue2) {
-            int shift = where == byValue1? 0:4;
+        if(where==Card.byValue1||where==Card.byValue2) {
+            int shift = where == Card.byValue1? 0:4;
             if(isProblemWithCardInQuad(value,shift)){
                 return false;
             }
         }
         else
-        if(where==byColor1||where==byColor2) {
+        if(where==Card.byColor1||where==Card.byColor2) {
             int line = color;
-            if(where == byColor2)
+            if(where == Card.byColor2)
                 line = color + 4;
             if(/*there is a problem*/ isProblemWithCardinLine(value,line))
                 return /*no hope*/false;
@@ -95,10 +96,10 @@ public class Possibility {
     public boolean isProblemWithCardInQuad(int value, int shift){
         int maybeTakenPlaces = 0;
             for (int column = shift; column < 4+shift; column++) {
-                if (tableQuads[value][column] == taken) {
+                if (table.tableQuads[value][column] == table.taken) {
                     maybeTakenPlaces++;
                 }
-                if (tableQuads[value][column] == maybe) {
+                if (table.tableQuads[value][column] == table.maybe) {
                     maybeTakenPlaces++;
                 }
             }
@@ -110,27 +111,27 @@ public class Possibility {
         }
 
     public boolean isProblemWithCardinLine(int value, int line){
-        if(tableLists[line][value]==empty){
+        if(table.tableLists[line][value]==Table.empty){
             return false;
         }
         int maybeTakenPlaces = 1;
         if (value > 0) {
-            int condition = tableLists[line][value - 1];
+            int condition = table.tableLists[line][value - 1];
             if (canBeTaken(condition)) {
                 maybeTakenPlaces++;
                 if (value > 1) {
-                    condition = tableLists[line][value - 2];
+                    condition = table.tableLists[line][value - 2];
                     if (canBeTaken(condition))
                         maybeTakenPlaces++;
                 }
             }
         }
         if (value < 12) {
-            int condition = tableLists[line][value + 1];
+            int condition = table.tableLists[line][value + 1];
             if (canBeTaken(condition)) {
                 maybeTakenPlaces++;
                 if (value < 11) {
-                    condition = tableLists[line][value + 2];
+                    condition = table.tableLists[line][value + 2];
                     if (canBeTaken(condition))
                         maybeTakenPlaces++;
                 }
@@ -148,81 +149,20 @@ public class Possibility {
         return index - 1;
     }
     public boolean canBeTaken(int condition){
-        if(condition == maybe||condition == taken)
+        if(condition == Table.maybe||condition == Table.taken)
             return true;
         return false;
     }
     public int getFirstUnusedCardId(){
         for (int index = 0; index < whereCardsAre.length; index++) {
-            if (    whereCardsAre[index] == inHand ||
-                    whereCardsAre[index] == inHeap ) {
+            if (Card.isAvailable(whereCardsAre[index])) {
                 return index;
             }
         }
         return -1;
     }
-    public void placeCardsOnTable(){
-        for (int i = 0; i < whereCardsAre.length/2; i++) {
-            //in this method we work with 2 similar cards
-            //XXX
-            int value = i/4;
-            int color = i%4;  // 0 1 2 3
-                                    // ♠ ♣ ♦ ♥
-            //now we have to fill the position
-            //if both cards are unavailable place cant be taken
-            //todo: check why this part crushes result
-            /*
-                tableLists[color][value] = empty;
-                tableLists[color+4][value] = empty;
-                tableQuads[value][color  ] = empty;
-                tableQuads[value][color+4] = empty;
-            */
-            //if one of cards is available any space can be taken
-            if(isAvailable(2 * i) || isAvailable(2 * i + 1)) {
-                tableLists[color  ][value] = maybe;
-                tableLists[color+4][value] = maybe;
-                tableQuads[value][color  ] = maybe;
-                tableQuads[value][color+4] = maybe;
-            }
 
-            //if one of two cards takes place in byColor1
-            if(     whereCardsAre[2 * i    ] == byColor1 ||
-                    whereCardsAre[2 * i + 1] == byColor1)
-                tableLists[color][value] = taken;
-            //and so on
-            if(     whereCardsAre[2 * i    ] == byColor2 ||
-                    whereCardsAre[2 * i + 1] == byColor2)
-                tableLists[color+4][value] = taken;
-            if(     whereCardsAre[2 * i    ] == byValue1 ||
-                    whereCardsAre[2 * i + 1] == byValue1)
-                tableQuads[value][color] = taken;
-            if(     whereCardsAre[2 * i    ] == byValue2 ||
-                    whereCardsAre[2 * i + 1] == byValue2)
-                tableQuads[value][color + 4] = taken;
-        }
-    }
-    boolean canBePutToLists(int line, int value){
-        int condition = tableLists[line][value];
-        if(condition == taken ||
-                condition == maybe)
-            return true;
-        else return false;
-    }
-    boolean isPlaced(int index){
-        if(whereCardsAre[index] == byColor1||
-                whereCardsAre[index] == byColor2||
-                whereCardsAre[index] == byValue1||
-                whereCardsAre[index] == byValue2)
-            return true;
-        else return false;
-    }
-    boolean isUnavailable(int index){
-        if(whereCardsAre[index] == inStack||
-                whereCardsAre[index] == otherPlayer||
-                whereCardsAre[index] == inHand_ignored)
-            return true;
-        else return false;
-    }
+
     public boolean fullyNoProblems(){
         for (int i = 0; i < 13; i++) {
 
@@ -236,43 +176,7 @@ public class Possibility {
         }
         return true;
     }
-    boolean isAvailable(int index){
-        if(whereCardsAre[index] == inHand||
-                whereCardsAre[index] == inHeap)
-            return true;
-        else return false;
-    }
-    public void printTable(){
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 13; j++) {
-                if(tableLists[i][j]==taken){
-                    System.out.print(RummiShell.cardname(j, i % 4)+" ");
-                }
-                if(tableLists[i][j]==maybe){
-                    System.out.print("?? ");
-                }
-                if(tableLists[i][j]==empty){
-                    System.out.print("-- ");
-                }
-            }
-            System.out.println();
-        }
-        for (int i = 0; i < 13; i++) {
-            for (int j = 0; j < 8; j++) {
-                if(tableQuads[i][j]==taken){
-                    System.out.print(RummiShell.cardname(i, j % 4)+" ");
-                }
-                if(tableQuads[i][j]==maybe){
-                    System.out.print("?? ");
-                }
-                if(tableQuads[i][j]==empty){
-                    System.out.print("-- ");
-                }
-            }
-            System.out.println();
-        }
-    }
     public void printCards(){
         for (int i = 0; i < 104; i++) {
             System.out.print(RummiShell.cardName(i));

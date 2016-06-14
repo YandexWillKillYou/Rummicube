@@ -25,7 +25,7 @@ public class RummiShell {
                 if(s.equals("HAND")){
                     System.out.print("Your hand: ");
                     for (int i = 0; i < 104; i++) {
-                        if(rs.whereCardsAre[i]==Possibility.inHand){
+                        if(rs.whereCardsAre[i]==Card.inHand){
                             System.out.print(cardName(i)+" ");
                         }
                     }
@@ -36,11 +36,11 @@ public class RummiShell {
                     try {
                         int halfid = halfId(s.charAt(2), s.charAt(3));
 
-                        if (rs.whereCardsAre[2 * halfid] == Possibility.inStack) {
-                            rs.whereCardsAre[2 * halfid] = Possibility.inHand;
+                        if (rs.whereCardsAre[2 * halfid] == Card.inStack) {
+                            rs.whereCardsAre[2 * halfid] = Card.inHand;
                             System.out.println("Card " + cardName(2*halfid) +" was added");
-                        } else if (rs.whereCardsAre[2 * halfid + 1] == Possibility.inStack) {
-                            rs.whereCardsAre[2 * halfid + 1] = Possibility.inHand;
+                        } else if (rs.whereCardsAre[2 * halfid + 1] == Card.inStack) {
+                            rs.whereCardsAre[2 * halfid + 1] = Card.inHand;
                             System.out.println("Card " + cardName(2*halfid+1) +" was added");
                         } else
                             System.out.println("No such card in stack");
@@ -53,11 +53,11 @@ public class RummiShell {
                     try {
                         int halfid = halfId(s.charAt(2), s.charAt(3));
 
-                        if (rs.whereCardsAre[2 * halfid+1] == Possibility.inHand) {
-                            rs.whereCardsAre[2 * halfid+1] = Possibility.inStack;
+                        if (rs.whereCardsAre[2 * halfid+1] == Card.inHand) {
+                            rs.whereCardsAre[2 * halfid+1] = Card.inStack;
                             System.out.println("Card " + cardName(2*halfid+1) +" was moved to stack");
-                        } else if (rs.whereCardsAre[2 * halfid] == Possibility.inHand) {
-                            rs.whereCardsAre[2 * halfid] = Possibility.inStack;
+                        } else if (rs.whereCardsAre[2 * halfid] == Card.inHand) {
+                            rs.whereCardsAre[2 * halfid] = Card.inStack;
                             System.out.println("Card " + cardName(2*halfid) +" was moved to stack");
                         } else
                             System.out.println("No such card on hand");
@@ -67,18 +67,18 @@ public class RummiShell {
                     continue;
                 }
             }else if (s.charAt(0)=='G'){
-                int go = rs.go();
-                Possibility pos = rs.list.get(go);
+                rs.go();
+                Possibility pos = rs.list.get(rs.longestResult());
                 String tmp = "";
                 for (int j = 0; j < 104; j++) {
-                    if(rs.whereCardsAre[j] == Possibility.inHand &&
-                            pos.isPlaced(j) ){
+                    if(rs.whereCardsAre[j] == Card.inHand &&
+                            Card.isPlaced(pos.whereCardsAre[j])){
                         tmp=tmp+RummiShell.cardName(j)+" ";
                     }
                 }
                 System.out.println(tmp);
-                    rs.list.get(go).printTable();
-                    rs.updateList(rs.list.get(go).whereCardsAre);
+                    pos.table.printTable();
+                    rs.updateList(pos.whereCardsAre);
                 continue;
             }else if(s.charAt(0)=='M'){
                 try{
@@ -94,7 +94,7 @@ public class RummiShell {
                 if(s.equals("TABLE")){
                     System.out.print("OnTable: ");
                     for (int i = 0; i < 104; i++) {
-                        if(rs.whereCardsAre[i]==Possibility.inHeap){
+                        if(rs.whereCardsAre[i]==Card.inHeap){
                             System.out.print(cardName(i)+" ");
                         }
                     }
@@ -105,11 +105,11 @@ public class RummiShell {
                     try {
                         int halfid = halfId(s.charAt(2), s.charAt(3));
 
-                        if (rs.whereCardsAre[2 * halfid] == Possibility.inStack) {
-                            rs.whereCardsAre[2 * halfid] = Possibility.inHeap;
+                        if (rs.whereCardsAre[2 * halfid] == Card.inStack) {
+                            rs.whereCardsAre[2 * halfid] = Card.inHeap;
                             System.out.println("Card " + cardName(2*halfid) +" was added");
-                        } else if (rs.whereCardsAre[2 * halfid + 1] == Possibility.inStack) {
-                            rs.whereCardsAre[2 * halfid + 1] = Possibility.inHeap;
+                        } else if (rs.whereCardsAre[2 * halfid + 1] == Card.inStack) {
+                            rs.whereCardsAre[2 * halfid + 1] = Card.inHeap;
                             System.out.println("Card " + cardName(2*halfid+1) +" was added");
                         } else
                             System.out.println("No such card in stack");
@@ -122,11 +122,11 @@ public class RummiShell {
                     try {
                         int halfid = halfId(s.charAt(2), s.charAt(3));
 
-                        if (rs.whereCardsAre[2 * halfid+1] == Possibility.inHeap) {
-                            rs.whereCardsAre[2 * halfid+1] = Possibility.inStack;
+                        if (rs.whereCardsAre[2 * halfid+1] == Card.inHeap) {
+                            rs.whereCardsAre[2 * halfid+1] = Card.inStack;
                             System.out.println("Card " + cardName(2*halfid+1) +" was moved to stack");
-                        } else if (rs.whereCardsAre[2 * halfid] == Possibility.inHeap) {
-                            rs.whereCardsAre[2 * halfid] = Possibility.inStack;
+                        } else if (rs.whereCardsAre[2 * halfid] == Card.inHeap) {
+                            rs.whereCardsAre[2 * halfid] = Card.inStack;
                             System.out.println("Card " + cardName(2*halfid) +" was moved to stack");
                         } else
                             System.out.println("No such card on hand");

@@ -65,4 +65,18 @@ public class Card {
         }
         return s;
     }
+    static boolean isAvailable(int condition){
+        if(condition == inHand||
+                condition == inHeap)
+            return true;
+        else return false;
+    }
+    static boolean isPlaced(int condition){
+        if(condition == byColor1||
+                condition == byColor2||
+                condition == byValue1||
+                condition == byValue2)
+            return true;
+        else return false;
+    }
 }
